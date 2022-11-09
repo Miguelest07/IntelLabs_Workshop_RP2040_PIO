@@ -1,0 +1,60 @@
+.program ParallelPort
+.side_set 1 opt
+
+; Read memory from RX fifo and output it to GPIO in parallel with a clock cycle
+; Parallel throughput with clock at the fastest frequecy as possible
+
+
+.wrap_target
+    pull            side 1;
+    out pins, 8     side 0;
+.wrap
+
+% c-sdk {
+
+//Helper function to initialize this PIO program
+static inline void ParallelPort_program_init(PIO pio, uint sm, uint offset, uint pin, uint npins, uint clkpin, float freq, float sys_hz)
+{
+    //Set up state machine and wrap target 
+    pio_sm_config c = ParallelPort_program_get_default_config(offset);
+
+    //Allow PIO to control GPIO pin as output
+    
+    for(int i = pin; i < (pin+npins); i++)
+    {
+        pio_gpio_init(pio, i);
+    }
+
+    pio_gpio_init(pio, clkpin);
+
+    // Set the pin direction to output (in PIO)
+    pio_sm_set_consecutive_pindirs(pio, sm, pin, npins, true);
+    pio_sm_set_consecutive_pindirs(pio, sm, clkpin, 1, true);
+
+    // Set the sideset pins
+    sm_config_set_sideset_pins(&c, clkpin);
+
+    // Set the output pins
+    sm_config_set_out_pins(&c, pin, npins);
+
+    // Set OSR shift direction
+    sm_config_set_out_shift(&c, true, true, 32);
+
+    // Set the clock divider for the state machine
+    float div = sys_hz / freq;
+    sm_config_set_clkdiv(&c, div);
+
+    // Load configuration and jump to start of the program
+    pio_sm_init(pio, sm, offset, &c);
+
+    pio_sm_set_enabled(pio, sm, true);
+}
+
+static inline void ParallelPort_change_sm_frequency(PIO pio, uint sm, uint offset, uint pin, uint npins, uint clkpin, float freq, float sys_hz)
+{
+    pio_sm_set_enabled(pio, sm, false);
+    ParallelPort_program_init(pio, sm, offset, pin, npins, clkpin, freq, sys_hz);
+    pio_sm_set_enabled(pio, sm, true);
+}
+
+%}

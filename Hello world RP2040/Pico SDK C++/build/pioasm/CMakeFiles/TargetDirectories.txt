@@ -1,0 +1,3 @@
+C:/Users/Miguel Estrada/Desktop/Workshop Intel 2022/Hello world RP2040/Pico SDK C++/build/pioasm/CMakeFiles/pioasm.dir
+C:/Users/Miguel Estrada/Desktop/Workshop Intel 2022/Hello world RP2040/Pico SDK C++/build/pioasm/CMakeFiles/edit_cache.dir
+C:/Users/Miguel Estrada/Desktop/Workshop Intel 2022/Hello world RP2040/Pico SDK C++/build/pioasm/CMakeFiles/rebuild_cache.dir
